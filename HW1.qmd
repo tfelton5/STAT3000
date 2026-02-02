@@ -24,3 +24,10 @@ You can add options to executable code like this
 ```
 
 The `echo: false` option disables the printing of code (only output is displayed).
+
+
+
+## include an image
+
+!["Screenshot of Rsutdio"](img/Screenshot_RStudio.png)
+
