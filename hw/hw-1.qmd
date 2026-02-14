@@ -80,7 +80,7 @@ dev.off()
 ```
 
 
-![Simple cars plot](img/plot.png)
+![Simple cars plot](../img/plot.png)
 
 
 4. **Define a function and compute real roots**
@@ -213,12 +213,14 @@ disc
     Show the terminal command(s) you typed:
 
     ```
-    # Your command here, e.g.
-    # quarto render hw1.qmd --to pdf --output-dir docs
+   quarto render hw/hw-1.qmd
+   
     ```
 
 11. **Git workflow**
+
     Make at least **three commits** with meaningful messages, such as:
+
 
 * `Add initial project structure`
 ```
@@ -226,14 +228,26 @@ git add -A
 git commit -m "Add initial project structure"
 git push
 ```
-
-
-
-
 * `Add quadratic root computation`
+```
+git add .
+git commit -m "Implement quadratic discriminant and root calculations"
+```
 * `Add rendering output to docs`
+```
+git add docs/
+git commit -m "Render PDF output to docs folder"
+```
 
   In this document, paste the output of:
+  
+```
+2bbea6c (HEAD -> main, origin/main, origin/HEAD) Add initial project structure
+cf6b925 Add initial project structure
+7584aec my second commit
+3d17757 update docs
+6dcdc65 my first commit
+```
 
   ```
   git log --oneline --decorate -n 5
@@ -241,8 +255,8 @@ git push
 
 12. **Push to GitHub**
     Push your work to GitHub. In this document, include:
-
 * a screenshot of your GitHub repo showing the folders `img/`, `data/`, `code/`, `docs/`
+![Screenshot of Github](../img/Screenshot of Github 02:13.png)
 * the link to the rendered PDF file in your repo (if applicable)
 
 ---
