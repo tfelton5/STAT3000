@@ -186,8 +186,11 @@ cp hw1.qmd code/quadratic.qmd
    Edit `code/quadratic.qmd` so it reads `a`, `b`, `c` from `data/coefs.txt` using a **relative path**.
    In *this* document, show the R code you used (it should also appear in `quadratic.qmd`).
 
-```{r}
-coefs <- scan("../data/coefs.txt")
+    ```{r}
+    # Your code here (example outline):
+    coefs <- scan("../data/coefs.txt")
+
+
 
 a <- coefs[1]
 b <- coefs[2]
@@ -195,8 +198,11 @@ c <- coefs[3]
 
 disc <- b^2 - 4*a*c
 disc
+
+     
 ```
 
+    ```
 9. **Switch to an absolute path and test portability**
 
    In `code/quadratic.qmd`, replace the relative path with:
