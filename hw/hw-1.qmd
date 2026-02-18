@@ -212,31 +212,31 @@ disc
     Render a PDF version of `hw1.qmd` (or `code/quadratic.qmd`) and place the PDF into `docs/`.
     Show the terminal command(s) you typed:
 
-    ```
-   quarto render hw/hw-1.qmd
-   
-    ```
+```
+quarto render hw/hw-1.qmd
+```
 
 11. **Git workflow**
 
-    Make at least **three commits** with meaningful messages, such as:
+    Make at least **three commits** with meaningful messages, such as:i
 
-
-* `Add initial project structure`
 ```
+* Add initial project structure with folders img, data, code, docs
 git add -A
 git commit -m "Add initial project structure"
 git push
 ```
-* `Add quadratic root computation`
 ```
+* Implement quadratic discriminant and root calculations in quadratic.qmd
 git add .
 git commit -m "Implement quadratic discriminant and root calculations"
+git push
 ```
-* `Add rendering output to docs`
 ```
+* Render project output to docs folder and update repository
 git add docs/
 git commit -m "Render PDF output to docs folder"
+git push
 ```
 
   In this document, paste the output of:
@@ -258,7 +258,7 @@ cf6b925 Add initial project structure
 * a screenshot of your GitHub repo showing the folders `img/`, `data/`, `code/`, `docs/`
 ![Screenshot of Github](../img/Screenshot of Github 02:13.png)
 * the link to the rendered PDF file in your repo (if applicable)
-
+https://github.com/tfelton5/STAT3000/blob/main/docs/hw-1.pdf
 ---
 
 ## Submission checklist
