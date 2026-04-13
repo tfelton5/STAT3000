@@ -1,0 +1,245 @@
+---
+title: "analysis"
+format: html
+---
+```{r}
+library(tidyverse)
+library(tidyr)
+library(lubridate)
+
+dat <- readRDS("/Users/treniah/STAT3000/hw/hw4/data/dat.rds")
+```
+
+```
+```
+## Figure 1: National weekly burden
+
+```{r}
+#| eval: true
+
+fig1_dat <- dat |>
+  group_by(date) |>
+  summarise(
+    cases = sum(cases, na.rm = TRUE),
+    hosp = sum(hosp, na.rm = TRUE),
+    deaths = sum(deaths, na.rm = TRUE),
+    pop = sum(population, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    cases_rate = cases / pop * 100000,
+    hosp_rate = hosp / pop * 100000,
+    deaths_rate = deaths / pop * 100000
+  ) |>
+  select(date, cases_rate, hosp_rate, deaths_rate) |>
+  pivot_longer(-date, names_to = "metric", values_to = "rate")
+
+ggplot(fig1_dat, aes(date, rate)) +
+  geom_line() +
+  facet_wrap(~metric, ncol = 1, scales = "free_y") +
+  labs(
+    title = "US COVID-19 Weekly Burden",
+    x = "Date",
+    y = "Rate per 100,000"
+  ) +
+  theme_minimal()
+```
+## Figure 2: Case rates for selected states
+
+```{r}
+#| eval: true
+
+top_states <- dat |>
+  group_by(state) |>
+  summarise(total_cases = sum(cases, na.rm = TRUE), .groups = "drop") |>
+  slice_max(total_cases, n = 6) |>
+  pull(state)
+
+fig2_dat <- dat |>
+  filter(state %in% top_states) |>
+  group_by(date, state) |>
+  summarise(
+    cases = sum(cases, na.rm = TRUE),
+    pop = first(population),
+    .groups = "drop"
+  ) |>
+  mutate(case_rate = cases / pop * 100000)
+
+ggplot(fig2_dat, aes(date, case_rate, color = state)) +
+  geom_line() +
+  labs(
+    title = "Weekly Case Rates (Top States)",
+    x = "Date",
+    y = "Cases per 100,000"
+  ) +
+  theme_minimal()
+```
+## Figure 3: Vaccination and booster progress
+
+```{r}
+#| eval: true
+
+fig3_dat <- dat |>
+  mutate(
+    vax = as.numeric(vax),
+    booster = as.numeric(booster),
+    population = as.numeric(population)
+  ) |>
+  group_by(date) |>
+  summarise(
+    vax = sum(vax, na.rm = TRUE),
+    booster = sum(booster, na.rm = TRUE),
+    pop = sum(population, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    vax_pct = vax / pop * 100,
+    booster_pct = booster / pop * 100
+  ) |>
+  pivot_longer(
+    cols = c(vax_pct, booster_pct),
+    names_to = "series",
+    values_to = "percent"
+  )
+
+ggplot(fig3_dat, aes(date, percent, color = series)) +
+  geom_line() +
+  labs(
+    title = "US Vaccination and Booster Progress",
+    x = "Date",
+    y = "Percent of Population"
+  ) +
+  theme_minimal()
+```
+
+## Figure 4: Top 10 states by COVID-19 death rate
+
+```{r}
+#| eval: true
+
+fig4_dat <- dat |>
+  mutate(
+    deaths = as.numeric(deaths),
+    population = as.numeric(population)
+  ) |>
+  filter(!is.na(state), !is.na(deaths), !is.na(population)) |>
+  group_by(state, state_name) |>
+  summarise(
+    deaths = sum(deaths, na.rm = TRUE),
+    pop = max(population, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(death_rate = deaths / pop * 100000) |>
+  filter(is.finite(death_rate)) |>
+  arrange(desc(death_rate)) |>
+  slice_head(n = 10)
+
+fig4_dat
+
+ggplot(fig4_dat, aes(x = reorder(state_name, death_rate), y = death_rate)) +
+  geom_col(fill = "tomato") +
+  coord_flip() +
+  labs(
+    title = "Top 10 States by COVID-19 Death Rate (2020–2021)",
+    x = "State",
+    y = "Deaths per 100,000"
+  ) +
+  theme_minimal()
+```
+
+## Figure 5: Vaccination vs hospitalization during Delta wave
+
+```{r}
+#| eval: true
+
+start_date <- as_date("2021-07-01")
+end_date   <- as_date("2021-09-30")
+
+# --- hospitalization during wave ---
+fig5_hosp <- dat |>
+  filter(date >= start_date, date <= end_date) |>
+  mutate(hosp = as.numeric(hosp)) |>
+  group_by(state, state_name) |>
+  summarise(
+    hosp = sum(hosp, na.rm = TRUE),
+    pop = max(population, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(hosp_rate = hosp / pop * 100000)
+
+# --- vaccination at end of period ---
+fig5_vax <- dat |>
+  filter(date == max(date)) |>
+  mutate(vax = as.numeric(vax)) |>
+  group_by(state, state_name) |>
+  summarise(
+    vax = max(vax, na.rm = TRUE),
+    pop = max(population, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(vax_rate = vax / pop * 100)
+
+# --- combine ---
+fig5_dat <- left_join(fig5_hosp, fig5_vax, by = c("state", "state_name")) |>
+  filter(is.finite(hosp_rate), is.finite(vax_rate))
+
+ggplot(fig5_dat, aes(x = vax_rate, y = hosp_rate)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm") +
+  labs(
+    title = "Vaccination vs Hospitalization (Delta Wave)",
+    x = "Vaccination rate (%)",
+    y = "Hospitalizations per 100,000"
+  ) +
+  theme_minimal()
+```
+
+## Figure 6: Booster coverage vs COVID-19 death rate
+
+```{r}
+#| eval: true
+
+start_date <- as_date("2021-11-01")
+end_date   <- as_date("2021-12-31")
+
+# --- deaths during window ---
+fig6_deaths <- dat |>
+  filter(date >= start_date, date <= end_date) |>
+  mutate(deaths = as.numeric(deaths)) |>
+  group_by(state, state_name) |>
+  summarise(
+    deaths = sum(deaths, na.rm = TRUE),
+    pop = max(population, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(death_rate = deaths / pop * 100000)
+
+# --- booster coverage at end of window ---
+fig6_booster <- dat |>
+  filter(date == max(date)) |>
+  mutate(booster = as.numeric(booster)) |>
+  group_by(state, state_name) |>
+  summarise(
+    booster = max(booster, na.rm = TRUE),
+    pop = max(population, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(booster_rate = booster / pop * 100)
+
+# --- combine ---
+fig6_dat <- left_join(fig6_booster, fig6_deaths, by = c("state", "state_name")) |>
+  filter(is.finite(booster_rate), is.finite(death_rate))
+
+ggplot(fig6_dat, aes(x = booster_rate, y = death_rate)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm") +
+  labs(
+    title = "Booster Coverage vs Death Rate (Late 2021)",
+    x = "Booster coverage (%)",
+    y = "Deaths per 100,000"
+  ) +
+  theme_minimal()
+```
+
+
+
