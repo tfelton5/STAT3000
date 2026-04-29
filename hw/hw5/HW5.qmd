@@ -1,0 +1,382 @@
+---
+title: "HW5"
+format: html
+editor: visual
+---
+
+---
+title: Problem set 5
+date: ""
+execute:
+  eval: false
+---
+
+## Part I: Rolling two dice
+
+1.  Write a function called `double_six` that takes a number `n` as an argument, simulates rolling two fair dice `n` times, and returns `TRUE` if at least one of the `n` rolls is a double-six.
+
+    Hint: generate two vectors of rolls and check whether any pair equals `(6, 6)`.
+
+```{r}
+double_six <- function(n){
+  die1 <- sample(1:6, n, replace = TRUE)
+  die2 <- sample(1:6, n, replace = TRUE)
+  
+  any(die1 == 6 & die2 == 6)
+}
+```
+
+2.  Suppose you roll two fair dice 24 times. If we define success to mean seeing at least one double-six, what is the estimated probability of success? Use a Monte Carlo simulation with `B = 1000` trials based on the function `double_six` from the previous exercise.
+
+```{r}
+B <- 10^3
+n <- 24
+
+results <- replicate(B, double_six(n))
+mean(results)
+```
+
+3.  Redo the previous exercise for several values of `n` to determine at what number of rolls the probability becomes greater than 50%. Set the seed at 1997.
+
+```{r}
+set.seed(1997)
+
+compute_prob <- function(n, B = 10^3){
+  mean(replicate(B, double_six(n)))
+}
+
+n_vals <- 1:60
+probs <- sapply(n_vals, compute_prob)
+
+which(probs > 0.5)[1]
+```
+
+4.  These probabilities can be computed exactly instead of relying on Monte Carlo approximations. Since the probability of not getting a double-six on a single roll is `35/36`, we have
+
+$$
+\Pr(\text{at least one double-six in } n \text{ rolls})
+= 1 - \left(\frac{35}{36}\right)^n.
+$$
+
+Plot the probabilities you obtained using Monte Carlo as points and the exact probabilities with a red line.
+
+```{r}
+exact_prob <- function(n){
+  1 - (35/36)^n
+}
+
+exact_vals <- exact_prob(n_vals)
+
+plot(n_vals, probs, pch = 16, col = "blue",
+     xlab = "n", ylab = "Probability")
+
+lines(n_vals, exact_vals, col = "red", lwd = 2)
+```
+
+5.  The Monte Carlo points in question 4 will not exactly match the red curve because the simulation uses only 1,000 iterations. Repeat exercise 2 for `n = 24`, but now try `B <- seq(10, 250, 5)^2` iterations. Plot the estimated probability against `sqrt(B)`. At what value of `sqrt(B)` do the estimates consistently stay within `0.005` of the exact probability? Add horizontal lines at the exact probability plus and minus `0.005`. Set the seed to 1998.
+
+```{r}
+set.seed(1998)
+
+B <- seq(10, 250, 5)^2
+n <- 24
+
+estimates <- sapply(B, function(b){
+  mean(replicate(b, double_six(n)))
+})
+
+exact <- 1 - (35/36)^n
+
+plot(sqrt(B), estimates, type = "b",
+     xlab = "sqrt(B)", ylab = "Estimated Probability")
+
+abline(h = exact, col = "red", lwd = 2)
+abline(h = exact + 0.005, col = "blue", lty = 2)
+abline(h = exact - 0.005, col = "blue", lty = 2)
+```
+
+6.  Repeat the comparison from question 4 (Monte Carlo points versus exact red line), but now use your findings from question 5 to choose an appropriate value of `B` so that the points practically fall on the red curve.
+
+    Hint: choose a value of `B` that is large enough for a good plot, but not so large that your document takes too long to render.
+
+```{r}
+n_vals <- 1:60
+B <- 15000
+
+probs_largeB <- sapply(n_vals, function(n){
+  mean(replicate(B, double_six(n)))
+})
+
+exact_vals <- 1 - (35/36)^n_vals
+
+plot(n_vals, probs_largeB, pch = 16, col = "blue",
+     xlab = "n", ylab = "Probability")
+
+lines(n_vals, exact_vals, col = "red", lwd = 2)
+```
+
+## Part II: American roulette
+
+In American roulette there are 38 slots total: 18 red, 18 black, and 2 green.
+
+7.  If a player bets \$1 on red, what is the probability that the casino wins the bet?
+
+$$
+P(\text{casino wins}) = P(\text{not red})
+= \frac{18 + 2}{38}
+= \frac{20}{38}
+= \frac{10}{19}.
+$$
+
+8.  If a player bets \$1 on red, the casino's profit from that single bet is represented by the random variable $X$:
+
+The random variable $X$ represents the casino's profit from a single bet: \[ X =
+
+If the player bets on red: - If the ball lands on red (18 out of 38 outcomes), the player wins \$1, so the casino loses \$1, so $X = -1$. - If the ball lands on black or green (20 out of 38 outcomes), the player loses \$1, so the casino gains \$1, so $X = +1$.
+
+```{=latex}
+$$
+X =
+\begin{cases}
+-1 & \text{with probability } \frac{18}{38} \\
++1 & \text{with probability } \frac{20}{38}
+\end{cases}
+$$
+```
+
+\]
+
+Create a sampling model for `X` using the `sample` function.
+
+```{r}
+X <- function(n){
+  sample(c(-1, 1), size = n, replace = TRUE,
+         prob = c(18/38, 20/38))
+}
+```
+
+9.  Now create a random variable $S$ for the casino's total profit if `n = 1000` people each make a \$1 bet on red. Use Monte Carlo simulation with `B = 10000` trials to estimate the probability that the casino loses money.
+
+```{r}
+n <- 1000
+B <- 10^4
+
+# function for one experiment: total casino profit from n players
+S <- function(n){
+  sum(sample(c(-1, 1), size = n, replace = TRUE,
+             prob = c(18/38, 20/38)))
+}
+
+# simulate B experiments
+S_vals <- replicate(B, S(n))
+
+# estimate probability casino loses money (S < 0)
+mean(S_vals < 0)
+```
+
+10. What is the expected value of $X$?
+
+$$
+E[X] = (-1)\cdot \frac{18}{38} + (1)\cdot \frac{20}{38}
+= \frac{20 - 18}{38}
+= \frac{2}{38}
+= \frac{1}{19}.
+$$
+
+11. What is the standard error of $X$?
+
+$$
+E[X^2] = 1^2 \cdot \frac{18}{38} + 1^2 \cdot \frac{20}{38} = 1
+$$
+
+$$
+\text{Var}(X) = E[X^2] - (E[X])^2
+= 1 - \left(\frac{1}{19}\right)^2
+= 1 - \frac{1}{361}
+= \frac{360}{361}
+$$
+
+$$
+SE(X) = \sqrt{\frac{360}{361}} \approx 0.999
+$$
+
+12. What is the expected value of $S$? Does the Monte Carlo simulation confirm this?
+
+$$
+E[S] = nE[X] = 1000 \cdot \frac{1}{19} = \frac{1000}{19} \approx 52.63.
+$$
+
+```{r}
+mean(S_vals)
+```
+
+13. What is the standard error of $S$? Does the Monte Carlo simulation confirm this?
+
+$$
+\text{Var}(S) = n \cdot \text{Var}(X)
+= 1000 \cdot \frac{360}{361}
+$$
+
+$$
+SE(S) = \sqrt{1000 \cdot \frac{360}{361}} \approx 31.6
+$$
+
+```{r}
+sd(S_vals)
+```
+
+14. Use data visualization to convince yourself that the distribution of $S$ is approximately normal. Make a histogram and a QQ-plot of the standardized values of $S$. The QQ-plot should be close to the identity line.
+
+```{r}
+# standardize S
+S_std <- (S_vals - mean(S_vals)) / sd(S_vals)
+
+# Histogram
+hist(S_std,
+     breaks = 40,
+     main = "Histogram of Standardized S",
+     xlab = "Standardized S",
+     col = "lightblue",
+     border = "white")
+
+# QQ plot
+qqnorm(S_std,
+       main = "QQ Plot of Standardized S")
+qqline(S_std, col = "red", lwd = 2)
+
+```
+
+15. The normal approximation will not be perfect in the tails. What would improve the approximation more: increasing the number of people playing `n`, or increasing the number of Monte Carlo iterations `B`? Explain your reasoning.
+
+    Increasing n improves the normal approximation because the central limit theorem depends on having a larger sample size, which makes the distribution S closer to normal. Increasing B only improves the accuracy of the simulation results, but it does not chnage the shape of the distribution itself.
+
+$$
+S \approx N\left(\mu = \frac{1000}{19},\; \sigma = \sqrt{1000 \cdot \frac{360}{361}}\right)
+$$
+
+$$
+P(S < 0) = P\left(Z < \frac{0 - \mu}{\sigma}\right)
+= P\left(Z < \frac{-1000/19}{\sqrt{1000 \cdot 360/361}}\right)
+$$
+
+16. Use the Central Limit Theorem to approximate the probability that the casino loses money. Does your CLT approximation agree with the Monte Carlo estimate from question 9?
+
+$$
+P(S < 0) \approx 0.01
+$$
+
+Using the CLT: $$
+S \approx N\left(\mu = \frac{n}{19},\; \sigma = \sqrt{n \cdot \frac{360}{361}}\right)
+$$
+
+$$
+P(S < 0) = P\left(Z < \frac{0 - n/19}{\sqrt{n \cdot 360/361}}\right)
+$$
+
+Set this equal to 0.01: $$
+\frac{-n/19}{\sqrt{n \cdot 360/361}} \approx -2.33
+$$
+
+Solve numerically for ( n ).
+
+```{r}
+target_prob <- 0.01
+
+find_prob <- function(n){
+  mu <- n * (1/19)
+  sigma <- sqrt(n * (360/361))
+  pnorm(0, mean = mu, sd = sigma)
+}
+
+n_vals <- 1:10000
+probs <- sapply(n_vals, find_prob)
+
+n_min <- n_vals[which(probs <= target_prob)[1]]
+n_min
+```
+
+17. What is the minimum number of people `n` who must each bet \$1 on red so that the probability the casino loses money is approximately 1% according to the CLT? Check your answer with a Monte Carlo simulation.
+
+    $$
+    X =
+    \begin{cases}
+    -1 & \text{with probability } \frac{18}{38} \\
+    +1 & \text{with probability } \frac{20}{38}
+    \end{cases}
+    $$
+
+    $$
+    \mu = E[X] = \frac{1}{19}, 
+    \quad 
+    \sigma^2 = \frac{360}{361}
+    $$
+
+    $$
+    S \approx N\left(\frac{n}{19}, \; \sqrt{n \cdot \frac{360}{361}}\right)
+    $$
+
+    We want: $$
+    P(S < 0) = 0.01
+    $$
+
+    Standardizing: $$
+    P(S < 0)
+    = P\left(
+    Z < \frac{0 - \frac{n}{19}}{\sqrt{n \cdot \frac{360}{361}}}
+    \right)
+    $$
+
+    Set equal to the 1% quantile: $$
+    \frac{-n/19}{\sqrt{n \cdot \frac{360}{361}}} = -2.33
+    $$
+
+    Simplify: $$
+    \frac{n/19}{\sqrt{n} \cdot \sqrt{360/361}} = 2.33
+    $$
+
+    $$
+    \frac{\sqrt{n}}{19 \sqrt{360/361}} = 2.33
+    $$
+
+    Solve for (n): $$
+    \sqrt{n} = 2.33 \cdot 19 \cdot \sqrt{\frac{360}{361}}
+    $$
+
+    $$
+    n = \left(2.33 \cdot 19 \cdot \sqrt{\frac{360}{361}}\right)^2
+    $$
+
+    $$
+    n \approx 1950
+    $$
+
+18. 
+
+```{r}
+set.seed(1999)
+
+# Recompute n_min (so this chunk works independently)
+target_prob <- 0.01
+
+find_prob <- function(n){
+  mu <- n * (1/19)
+  sigma <- sqrt(n * (360/361))
+  pnorm(0, mean = mu, sd = sigma)
+}
+
+n_vals <- 1:10000
+probs <- sapply(n_vals, find_prob)
+n_min <- n_vals[which(probs <= target_prob)[1]]
+
+# Monte Carlo verification
+B <- 10^4
+
+S <- function(n){
+  sum(sample(c(-1, 1), size = n, replace = TRUE,
+             prob = c(18/38, 20/38)))
+}
+
+S_vals <- replicate(B, S(n_min))
+
+mean(S_vals < 0)
+```

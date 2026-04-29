@@ -211,7 +211,7 @@ Create a simple plot in R (any plot you like), save it as <code>img/plot.png</co
 </div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="img/plot.png" class="img-fluid figure-img"></p>
+<p><img src="../img/plot.png" class="img-fluid figure-img"></p>
 <figcaption>Simple cars plot</figcaption>
 </figure>
 </div>
@@ -313,31 +313,39 @@ cp hw1.qmd code/quadratic.qmd
 <p>In <code>code/quadratic.qmd</code>, replace the relative path with: <code>file.path(getwd(), "data/coefs.txt")</code> Render it once to confirm it works.</p>
 <p>Then <strong>move the entire project folder</strong> to a new folder name (e.g., <code>RtmpXXXX</code>). Re-render <code>code/quadratic.qmd</code>. Does it still render? Briefly explain what happened, then switch back to a relative path and confirm it renders again.</p></li>
 <li><p><strong>Render to PDF and publish to GitHub Pages-style docs folder</strong></p>
-<p>Render a PDF version of <code>hw1.qmd</code> (or <code>code/quadratic.qmd</code>) and place the PDF into <code>docs/</code>. Show the terminal command(s) you typed:</p>
-<pre><code># Your command here, e.g.
-# quarto render hw1.qmd --to pdf --output-dir docs</code></pre></li>
-<li><p><strong>Git workflow</strong> Make at least <strong>three commits</strong> with meaningful messages, such as:</p></li>
+<p>Render a PDF version of <code>hw1.qmd</code> (or <code>code/quadratic.qmd</code>) and place the PDF into <code>docs/</code>. Show the terminal command(s) you typed:</p></li>
 </ol>
-<ul>
-<li><code>Add initial project structure</code></li>
-</ul>
-<pre><code>git add -A
+<pre><code>quarto render hw/hw-1.qmd</code></pre>
+<ol start="11" type="1">
+<li><p><strong>Git workflow</strong></p>
+<p>Make at least <strong>three commits</strong> with meaningful messages, such as:i</p></li>
+</ol>
+<pre><code>* Add initial project structure with folders img, data, code, docs
+git add -A
 git commit -m "Add initial project structure"
 git push</code></pre>
-<ul>
-<li><p><code>Add quadratic root computation</code></p></li>
-<li><p><code>Add rendering output to docs</code></p>
+<pre><code>* Implement quadratic discriminant and root calculations in quadratic.qmd
+git add .
+git commit -m "Implement quadratic discriminant and root calculations"
+git push</code></pre>
+<pre><code>* Render project output to docs folder and update repository
+git add docs/
+git commit -m "Render PDF output to docs folder"
+git push</code></pre>
 <p>In this document, paste the output of:</p>
-<pre><code>git log --oneline --decorate -n 5</code></pre></li>
-</ul>
+<pre><code>2bbea6c (HEAD -&gt; main, origin/main, origin/HEAD) Add initial project structure
+cf6b925 Add initial project structure
+7584aec my second commit
+3d17757 update docs
+6dcdc65 my first commit</code></pre>
+<pre><code>git log --oneline --decorate -n 5</code></pre>
 <ol start="12" type="1">
 <li><strong>Push to GitHub</strong> Push your work to GitHub. In this document, include:</li>
 </ol>
 <ul>
-<li>a screenshot of your GitHub repo showing the folders <code>img/</code>, <code>data/</code>, <code>code/</code>, <code>docs/</code></li>
-<li>the link to the rendered PDF file in your repo (if applicable)</li>
+<li>a screenshot of your GitHub repo showing the folders <code>img/</code>, <code>data/</code>, <code>code/</code>, <code>docs/</code> <img src="../img/Screenshot%20of%20Github%2002:13.png" class="img-fluid" alt="Screenshot of Github"></li>
+<li>the link to the rendered PDF file in your repo (if applicable) https://github.com/tfelton5/STAT3000/blob/main/docs/hw-1.pdf —</li>
 </ul>
-<hr>
 </section>
 <section id="submission-checklist" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="submission-checklist"><span class="header-section-number">3</span> Submission checklist</h2>
