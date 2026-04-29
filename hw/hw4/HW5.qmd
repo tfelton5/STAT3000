@@ -1,14 +1,7 @@
 ---
 title: "HW5"
-format: html
+format: pdf
 editor: visual
----
-
----
-title: Problem set 5
-date: ""
-execute:
-  eval: false
 ---
 
 ## Part I: Rolling two dice
